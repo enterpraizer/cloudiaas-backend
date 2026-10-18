@@ -4,7 +4,7 @@ Backend мультитенантной IaaS-платформы: тенанты �
 
 Стек: Python 3.13, FastAPI, SQLAlchemy 2 (async), PostgreSQL, Redis, Celery.
 
-Клиентская часть: [enterpraizer/Frontend](https://github.com/enterpraizer/Frontend) (React + TypeScript).
+Клиентская часть: [enterpraizer/cloudiaas-frontend](https://github.com/enterpraizer/cloudiaas-frontend) (React + TypeScript).
 
 ## Возможности
 
@@ -89,8 +89,8 @@ Redis одновременно служит брокером и backend'ом р�
 Нужны Docker и Docker Compose.
 
 ```bash
-git clone https://github.com/enterpraizer/Backend.git
-cd Backend
+git clone https://github.com/enterpraizer/cloudiaas-backend.git
+cd cloudiaas-backend
 cp .env.example .env      # заполните значения, см. ниже
 make dev                  # docker compose up --build
 make migrate              # применить миграции Alembic
@@ -196,4 +196,4 @@ Workflow `.github/workflows/deploy.yml` при пуше в `main` собирае
 
 ## Связанные репозитории
 
-- Frontend: [enterpraizer/Frontend](https://github.com/enterpraizer/Frontend)
+- Frontend: [enterpraizer/cloudiaas-frontend](https://github.com/enterpraizer/cloudiaas-frontend)
