@@ -7,7 +7,7 @@ import redis.asyncio as aioredis
 from fastapi import APIRouter, Depends, status
 
 from src.application.services.auth_service import AuthService
-from src.application.services.quota_service import QuotaService
+from src.application.services.quota_service import QuotaService, usage_cache_key
 from src.infrastructure.models.tenant import Tenant
 from src.infrastructure.repositories.audit_log import AuditLogRepository
 from src.infrastructure.repositories.network import NetworkRepository
@@ -35,7 +35,7 @@ async def get_usage(
     quota_service: QuotaService = Depends(),
 ) -> dict:
     """Resource quota usage for the tenant. Cached in Redis for 30 seconds."""
-    cache_key = f"usage:{tenant.id}"
+    cache_key = usage_cache_key(tenant.id)
 
     try:
         redis = _get_redis()

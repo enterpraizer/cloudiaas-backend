@@ -1,8 +1,30 @@
+import logging
 from uuid import UUID
+
+import redis.asyncio as aioredis
 from fastapi import Depends, HTTPException, status
 from src.infrastructure.models.resource_quota import ResourceQuota
 from src.infrastructure.repositories.quotas import QuotaRepository, UsageRepository
 from src.infrastructure.schemas.users import UserRequest
+from src.settings import settings
+
+logger = logging.getLogger(__name__)
+
+
+def usage_cache_key(tenant_id: UUID) -> str:
+    return f"usage:{tenant_id}"
+
+
+async def invalidate_usage_cache(tenant_id: UUID) -> None:
+    """Drop the cached /dashboard/usage response so the next read sees the new usage."""
+    try:
+        client = aioredis.from_url(settings.redis.url, decode_responses=True)
+        try:
+            await client.delete(usage_cache_key(tenant_id))
+        finally:
+            await client.aclose()
+    except Exception:
+        logger.warning("Redis unavailable, usage cache for tenant %s not invalidated", tenant_id)
 
 
 class QuotaExceededError(Exception):
@@ -46,9 +68,11 @@ class QuotaService:
             raise QuotaExceededError("VM count", 1, quota.max_vms - usage.used_vms)
 
         await self._usage.increment(tenant_id, vcpu, ram_mb, disk_gb)
+        await invalidate_usage_cache(tenant_id)
 
     async def release(self, tenant_id: UUID, vcpu: int, ram_mb: int, disk_gb: int) -> None:
         await self._usage.decrement(tenant_id, vcpu, ram_mb, disk_gb)
+        await invalidate_usage_cache(tenant_id)
 
     async def get_usage_summary(self, tenant_id: UUID) -> dict:
         quota = await self._quota.get_by_tenant(tenant_id)
@@ -97,4 +121,5 @@ class QuotaService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Quota not found for tenant",
             )
+        await invalidate_usage_cache(tenant_id)
         return result

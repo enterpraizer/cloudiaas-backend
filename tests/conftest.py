@@ -65,6 +65,29 @@ VM_PAYLOAD = {"name": "test-vm", "vcpu": 1, "ram_mb": 512, "disk_gb": 10}
 
 # ── 4. Fixtures ────────────────────────────────────────────────────────────────
 
+@pytest.fixture(autouse=True)
+def _disable_rate_limit(monkeypatch):
+    """Tests must not depend on a local Redis: make the limiter take its fail-open path."""
+    from src.interfaces.api.middleware.rate_limit import RedisRateLimitMiddleware
+
+    def _redis_unavailable(self):
+        raise ConnectionError("rate limiter is disabled in tests")
+
+    monkeypatch.setattr(RedisRateLimitMiddleware, "_get_redis", _redis_unavailable)
+
+
+@pytest.fixture(autouse=True)
+def _mock_hypervisor(monkeypatch):
+    """Never start real containers from tests: force HypervisorService into its mock mode."""
+    from docker.errors import DockerException
+    from src.application.services import hypervisor_service
+
+    def _docker_unavailable(*args, **kwargs):
+        raise DockerException("Docker is disabled in tests")
+
+    monkeypatch.setattr(hypervisor_service.docker, "from_env", _docker_unavailable)
+
+
 @pytest_asyncio.fixture
 async def db_engine():
     """Fresh in-memory SQLite per test function; all tables created from models."""
