@@ -23,11 +23,11 @@ _TEST_ENV = {
     "EMAIL_PASSWORD": "testpass",
     "SECRET_KEY": "test-secret-key-for-testing-only-32chars!",
     "FRONTEND_URL": "http://localhost:3000",
-    "APP_SECRET_KEY": "test-access-secret-key-for-testing-1234",
-    "APP_REFRESH_SECRET_KEY": "test-refresh-secret-key-for-testing-12",
-    "APP_ALGORITHM": "HS256",
-    "APP_ACCESS_TOKEN_EXPIRE_MINUTES": "30",
-    "APP_REFRESH_TOKEN_EXPIRE_DAYS": "7",
+    "SECRET_KEY": "test-access-secret-key-for-testing-1234",
+    "REFRESH_SECRET_KEY": "test-refresh-secret-key-for-testing-12",
+    "ALGORITHM": "HS256",
+    "ACCESS_TOKEN_EXPIRE_MINUTES": "30",
+    "REFRESH_TOKEN_EXPIRE_DAYS": "7",
     "DEBUG": "true",
 }
 for _k, _v in _TEST_ENV.items():
